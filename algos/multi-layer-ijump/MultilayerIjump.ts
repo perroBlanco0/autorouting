@@ -209,7 +209,7 @@ export class MultilayerIjump extends GeneralizedAstarAutorouter {
       current.g +
       manDist(current, neighbor) * (current.travelMarginCostFactor ?? 1) +
       (neighbor.enterMarginCost ?? 0)
-    if (neighbor.l ?? -1 !== current.l ?? -1) {
+    if ((neighbor.l ?? -1) !== (current.l ?? -1)) {
       cost += this.VIA_COST
     }
     return cost
@@ -490,12 +490,17 @@ export class MultilayerIjump extends GeneralizedAstarAutorouter {
           }
         }
         if (travelDir.wallDistance === Infinity) {
-          travelDirs3.push({
-            ...travelDir,
-            travelDistance: goalDistAlongTravelDir,
-            enterMarginCost: 0,
-            travelMarginCostFactor: 1,
-          })
+          // distAlongDir is unsigned — only push it when the goal is actually
+          // in this direction, otherwise this creates a node displaced away
+          // from the goal (a "wild jump")
+          if (isGoalInTravelDir) {
+            travelDirs3.push({
+              ...travelDir,
+              travelDistance: goalDistAlongTravelDir,
+              enterMarginCost: 0,
+              travelMarginCostFactor: 1,
+            })
+          }
         } else if (travelDir.wallDistance > this.largestMargin) {
           for (const { margin, enterCost, travelCostFactor } of this
             .marginsWithCosts) {
