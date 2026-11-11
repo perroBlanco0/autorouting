@@ -163,12 +163,17 @@ export class IJumpMultiMarginAutorouter extends GeneralizedAstarAutorouter {
           }
         }
         if (travelDir.wallDistance === Infinity) {
-          travelDirs2.push({
-            ...travelDir,
-            travelDistance: goalDistAlongTravelDir,
-            enterMarginCost: 0,
-            travelMarginCostFactor: 1,
-          })
+          // distAlongDir is unsigned — only push it when the goal is actually
+          // in this direction, otherwise this creates a node displaced away
+          // from the goal (a "wild jump")
+          if (isGoalInTravelDir) {
+            travelDirs2.push({
+              ...travelDir,
+              travelDistance: goalDistAlongTravelDir,
+              enterMarginCost: 0,
+              travelMarginCostFactor: 1,
+            })
+          }
         } else if (travelDir.wallDistance > this.largestMargin) {
           for (const { margin, enterCost, travelCostFactor } of this
             .marginsWithCosts) {
